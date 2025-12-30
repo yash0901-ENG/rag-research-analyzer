@@ -1,0 +1,7 @@
+faiss-cpu
+langchain
+langchain-community
+sentence-transformers
+pypdf
+openai
+tqdm
