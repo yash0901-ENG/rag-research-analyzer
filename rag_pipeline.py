@@ -3,7 +3,7 @@ import os
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import FAISS
-from langchain.schema import Document
+from langchain_core.documents import Document
 
 from sentence_transformers import SentenceTransformer
 
@@ -50,7 +50,7 @@ if __name__ == "__main__":
     print(f"Embedding vector size: {embeddings.shape[1]}")
 
     # -------------------------
-    # 4. FAISS VECTOR STORE (LangChain)
+    # 4. FAISS VECTOR STORE
     # -------------------------
     documents = [Document(page_content=text) for text in texts]
 
@@ -73,4 +73,5 @@ if __name__ == "__main__":
         print(f"--- Result {i} ---\n")
         print(doc.page_content)
         print("\n")
+
 
