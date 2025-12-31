@@ -1,5 +1,5 @@
 import os
-import faiss_cpu as faiss
+
 import numpy as np
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
