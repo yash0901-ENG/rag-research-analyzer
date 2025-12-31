@@ -1,8 +1,11 @@
 import os
-
 import numpy as np
+
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
+from langchain.vectorstores import FAISS
+from langchain.schema import Document
+
 from sentence_transformers import SentenceTransformer
 
 
@@ -39,35 +42,33 @@ if __name__ == "__main__":
     # 3. EMBEDDINGS (FREE, LOCAL)
     # -------------------------
     model = SentenceTransformer("all-MiniLM-L6-v2")
+
     texts = [chunk.page_content for chunk in chunks]
     embeddings = model.encode(texts)
 
     print(f"Embedding vector size: {embeddings.shape[1]}")
 
     # -------------------------
-    # 4. FAISS VECTOR STORE
+    # 4. FAISS VECTOR STORE (LangChain)
     # -------------------------
-    dimension = embeddings.shape[1]
-    index = faiss.IndexFlatL2(dimension)
-    index.add(np.array(embeddings))
+    documents = [Document(page_content=text) for text in texts]
+    vectorstore = FAISS.from_documents(documents, embedding=model)
 
-    print(f"Vectors stored in FAISS index: {index.ntotal}")
+    print(f"Vectors stored in FAISS index: {vectorstore.index.ntotal}")
+
+    retriever = vectorstore.as_retriever(search_kwargs={"k": 3})
 
     # -------------------------
     # 5. USER QUERY (RETRIEVAL)
     # -------------------------
     query = input("\nEnter your query: ")
 
-    query_embedding = model.encode([query])
-    k = 3  # number of chunks to retrieve
-
-    distances, indices = index.search(query_embedding, k)
+    results = retriever.get_relevant_documents(query)
 
     print("\nRETRIEVED CONTEXT:\n")
 
-    for i, idx in enumerate(indices[0], 1):
+    for i, doc in enumerate(results, 1):
         print(f"--- Result {i} ---\n")
-        print(chunks[idx].page_content)
+        print(doc.page_content)
         print("\n")
-
 
