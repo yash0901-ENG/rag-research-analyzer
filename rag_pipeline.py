@@ -1,9 +1,8 @@
 import os
-import numpy as np
 
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain.vectorstores import FAISS
+from langchain_community.vectorstores import FAISS
 from langchain.schema import Document
 
 from sentence_transformers import SentenceTransformer
@@ -44,6 +43,8 @@ if __name__ == "__main__":
     model = SentenceTransformer("all-MiniLM-L6-v2")
 
     texts = [chunk.page_content for chunk in chunks]
+
+    print("Encoding embeddings...")
     embeddings = model.encode(texts)
 
     print(f"Embedding vector size: {embeddings.shape[1]}")
@@ -52,6 +53,7 @@ if __name__ == "__main__":
     # 4. FAISS VECTOR STORE (LangChain)
     # -------------------------
     documents = [Document(page_content=text) for text in texts]
+
     vectorstore = FAISS.from_documents(documents, embedding=model)
 
     print(f"Vectors stored in FAISS index: {vectorstore.index.ntotal}")
