@@ -77,7 +77,7 @@ if __name__ == "__main__":
     # -------------------------
     query = input("\nEnter your query: ")
 
-    results = retriever.get_relevant_documents(query)
+    results = retriever.invoke(query)
 
     print("\nRETRIEVED CONTEXT:\n")
 
