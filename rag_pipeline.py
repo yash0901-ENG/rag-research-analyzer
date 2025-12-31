@@ -20,6 +20,9 @@ class SentenceTransformerEmbeddings:
     def embed_query(self, text):
         return self.model.encode([text])[0].tolist()
 
+    def __call__(self, text):
+        return self.embed_query(text)
+
 
 def load_pdfs(pdf_dir):
     documents = []
@@ -32,55 +35,31 @@ def load_pdfs(pdf_dir):
 
 if __name__ == "__main__":
 
-    # -------------------------
-    # 1. LOAD PDF DOCUMENTS
-    # -------------------------
     pdf_directory = "data/pdfs"
     docs = load_pdfs(pdf_directory)
     print(f"Total pages loaded: {len(docs)}")
 
-    # -------------------------
-    # 2. CHUNKING
-    # -------------------------
-    splitter = RecursiveCharacterTextSplitter(
-        chunk_size=1000,
-        chunk_overlap=200
-    )
-
+    splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
     chunks = splitter.split_documents(docs)
     print(f"Total chunks created: {len(chunks)}")
 
-    # -------------------------
-    # 3. EMBEDDINGS (FREE, LOCAL)
-    # -------------------------
     embedding_model = SentenceTransformerEmbeddings("all-MiniLM-L6-v2")
-
     texts = [chunk.page_content for chunk in chunks]
 
     print("Encoding embeddings...")
     sample_vec = embedding_model.embed_documents([texts[0]])[0]
     print(f"Embedding vector size: {len(sample_vec)}")
 
-    # -------------------------
-    # 4. FAISS VECTOR STORE
-    # -------------------------
     documents = [Document(page_content=text) for text in texts]
-
     vectorstore = FAISS.from_documents(documents, embedding=embedding_model)
-
     print(f"Vectors stored in FAISS index: {vectorstore.index.ntotal}")
 
     retriever = vectorstore.as_retriever(search_kwargs={"k": 3})
 
-    # -------------------------
-    # 5. USER QUERY (RETRIEVAL)
-    # -------------------------
     query = input("\nEnter your query: ")
-
     results = retriever.invoke(query)
 
     print("\nRETRIEVED CONTEXT:\n")
-
     for i, doc in enumerate(results, 1):
         print(f"--- Result {i} ---\n")
         print(doc.page_content)
