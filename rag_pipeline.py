@@ -8,6 +8,19 @@ from langchain_core.documents import Document
 from sentence_transformers import SentenceTransformer
 
 
+class SentenceTransformerEmbeddings:
+    """Adapter to make SentenceTransformer compatible with LangChain."""
+
+    def __init__(self, model_name="all-MiniLM-L6-v2"):
+        self.model = SentenceTransformer(model_name)
+
+    def embed_documents(self, texts):
+        return self.model.encode(texts).tolist()
+
+    def embed_query(self, text):
+        return self.model.encode([text])[0].tolist()
+
+
 def load_pdfs(pdf_dir):
     documents = []
     for file in os.listdir(pdf_dir):
@@ -40,21 +53,20 @@ if __name__ == "__main__":
     # -------------------------
     # 3. EMBEDDINGS (FREE, LOCAL)
     # -------------------------
-    model = SentenceTransformer("all-MiniLM-L6-v2")
+    embedding_model = SentenceTransformerEmbeddings("all-MiniLM-L6-v2")
 
     texts = [chunk.page_content for chunk in chunks]
 
     print("Encoding embeddings...")
-    embeddings = model.encode(texts)
-
-    print(f"Embedding vector size: {embeddings.shape[1]}")
+    sample_vec = embedding_model.embed_documents([texts[0]])[0]
+    print(f"Embedding vector size: {len(sample_vec)}")
 
     # -------------------------
     # 4. FAISS VECTOR STORE
     # -------------------------
     documents = [Document(page_content=text) for text in texts]
 
-    vectorstore = FAISS.from_documents(documents, embedding=model)
+    vectorstore = FAISS.from_documents(documents, embedding=embedding_model)
 
     print(f"Vectors stored in FAISS index: {vectorstore.index.ntotal}")
 
@@ -73,5 +85,4 @@ if __name__ == "__main__":
         print(f"--- Result {i} ---\n")
         print(doc.page_content)
         print("\n")
-
 
