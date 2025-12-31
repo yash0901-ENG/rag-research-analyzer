@@ -1,136 +1,93 @@
-📚 Retrieval-Augmented Generation (RAG) for Research PDFs
-📌 Overview
+RAG-based Research PDF Retrieval
+Overview
 
-This project implements an end-to-end Retrieval-Augmented Generation (RAG) pipeline for academic research documents.
+This project is a simple implementation of a Retrieval-Augmented Generation (RAG) style pipeline for academic PDFs.
 
-The system ingests PDF research papers, converts them into machine-readable text, splits them into meaningful chunks, embeds each chunk into a semantic vector space, stores them in a vector database, and retrieves the most relevant document segments for a user query using semantic similarity.
+It takes a folder of research papers in PDF format, extracts the text, splits it into chunks, converts each chunk into a vector embedding, stores those vectors in a FAISS index, and retrieves the most relevant chunks for a given query.
 
-The goal is to enable meaning-based retrieval from long and complex research papers instead of relying on simple keyword matching.
+The goal is to make it easier to search research papers by meaning rather than exact keywords.
 
-🧠 Problem
+Why this exists
 
-Research papers are:
+Searching research papers is hard because:
 
-Long and dense
+Papers are long and dense
 
-Difficult to search manually
+Keyword search fails when wording is different
 
-Poorly served by keyword-based search when queries are phrased differently from the original text
+Manual skimming is slow
 
-This system addresses these issues by retrieving content based on semantic meaning, not just surface-level word matches.
+This project uses semantic embeddings so that queries like “what is self-attention” still find relevant content even if those exact words are not used in the paper.
 
-🏗️ Architecture
-PDFs
-  ↓
-Text Extraction
-  ↓
-Chunking (overlapping)
-  ↓
-Semantic Embeddings
-  ↓
-FAISS Vector Store
-  ↓
-Query-time Retrieval
+How it works
 
-⚙️ Methodology
-1. Document Ingestion
+PDFs are loaded from a folder and converted to text
 
-PDF files are loaded and converted into plain text so they can be processed by NLP models.
+Text is split into overlapping chunks
 
-2. Chunking
+Each chunk is embedded using a sentence embedding model
 
-Long texts are split into smaller overlapping segments.
+Embeddings are stored in a FAISS vector index
 
-Chunk size: 1000 characters
+User queries are embedded and matched against stored vectors
 
-Overlap: 200 characters
+Setup
+Requirements
 
-This preserves contextual continuity across chunk boundaries.
+Python 3.10 or 3.11
 
-3. Embeddings
+Tested on Windows, should also work on Linux/Mac
 
-Each chunk is converted into a numerical vector using a sentence embedding model.
+Quick start
+git clone https://github.com/yash0901-ENG/rag-research-analyzer.git
+cd rag-research-analyzer
 
-Model: all-MiniLM-L6-v2
+python -m venv venv
+venv\Scripts\activate   # Windows
+# source venv/bin/activate  # Mac/Linux
 
-Vector dimension: 384
+pip install -r requirements.txt
+python rag_pipeline.py
 
-4. Vector Store
+Example
 
-All embeddings are stored in a FAISS index for efficient semantic similarity search.
+Query:
 
-5. Retrieval
-
-A user query is embedded into the same vector space and compared against stored vectors.
-The system retrieves the top-k most similar chunks as relevant context.
-
-🧪 Example
-
-Query
-
-What is self-attention?
+what are transformers
 
 
-Retrieved Output (excerpt)
+Output:
 
-The Transformer model is based entirely on self-attention mechanisms, dispensing with recurrence and convolution...
+You will see the most relevant chunks from the papers that discuss Transformers and self-attention.
 
-🧰 Tech Stack
+Tech used
 
 Python
-
-LangChain (community modules)
 
 SentenceTransformers
 
 FAISS
 
-NumPy
+LangChain (community modules)
 
-⚠️ Limitations
+Limitations
 
-Retrieval-only system (no LLM-based answer generation).
+This is retrieval only — it does not generate answers
 
-Not designed for statistical text analysis.
+No ranking evaluation metrics are implemented
 
-Retrieval quality depends on chunking and embedding model.
+Performance depends on chunk size and embedding model
 
-🚀 Possible Extensions
+Possible next steps
 
-Add an LLM for answer generation.
+Add an LLM on top to generate answers
 
-Add evaluation metrics (precision@k, recall@k).
+Add evaluation metrics like precision@k
 
-Support hybrid keyword + semantic search.
+Support hybrid keyword + semantic search
 
-Scale to very large document collections.
+Notes
 
-⚙️ Environment Requirements
+Put your PDFs inside data/pdfs/ before running
 
-Python 3.10 or 3.11 recommended
-
-Not tested on Python 3.12+ or Python 3.9
-
-⚡ Quick Start
-1. Clone the repository
-git clone https://github.com/yash0901-ENG/rag-research-analyzer.git
-cd rag-research-analyzer
-
-2. Create and activate virtual environment
-
-Windows
-
-python -m venv venv
-venv\Scripts\activate
-
-
-Mac/Linux
-
-python3 -m venv venv
-source venv/bin/activate
-
-3. Install dependencies
-pip install -r requirements.txt
-
-4. Run the pipeline
-python rag_pipeline.py
+Large PDFs will take longer to process on first run
